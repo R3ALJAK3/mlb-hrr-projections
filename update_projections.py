@@ -14,7 +14,7 @@ except Exception as e:
 
 # 2. Setup Gemini
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel('gemini-1.5-flash')
+model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
 
 prompt = f"""Using this MLB slate: {slate_info}, calculate HRR projections (Hits + Runs + RBIs) for the top 5 hitters on each team. 
 Return ONLY a valid JSON object where keys are game names (e.g., 'NYY @ BOS') and values are lists of objects with 'name' and 'hrr' keys. 
