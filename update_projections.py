@@ -21,17 +21,16 @@ except Exception as e:
 # 3. Setup Gemini
 try:
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-    # FIXED: Updated model string to avoid 404 error
+    
+    # FIXED: Using just 'gemini-1.5-flash' without prefixes
     model = genai.GenerativeModel('gemini-1.5-flash')
 
-    prompt = "Using this MLB slate: " + slate_info + """. 
-    Calculate HRR projections (Hits + Runs + RBIs) for the top 5 hitters on each team. 
-    Return ONLY a valid JSON object where keys are game names (e.g., 'NYY @ BOS') and values are lists of objects with 'name' and 'hrr' keys. 
-    Do not include markdown or extra text."""
+    prompt = f"Using this MLB slate: {slate_info}. Calculate HRR projections (Hits + Runs + RBIs) for the top 5 hitters on each team. Return ONLY a valid JSON object where keys are game names (e.g., 'NYY @ BOS') and values are lists of objects with 'name' and 'hrr' keys."
 
     response = model.generate_content(prompt)
     raw_text = response.text.strip()
     
+    # Clean potential markdown
     if "```" in raw_text:
         raw_text = raw_text.split("```")[1].replace("json", "").strip()
     
@@ -39,10 +38,10 @@ try:
     
     with open("data.json", "w") as f:
         json.dump(json_data, f, indent=4)
-    print("Successfully wrote new data to data.json")
+    print("Successfully updated data.json")
 
 except Exception as e:
-    print(f"Gemini/JSON Error: {e}")
-    # Force write a small change so the GitHub Action sees a file update
+    # This ensures something is always written so the site doesn't stay blank
     with open("data.json", "w") as f:
         json.dump({"error": str(e), "date": today}, f)
+        
