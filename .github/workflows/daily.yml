@@ -1,1 +1,28 @@
+name: Daily Update
+on:
+  schedule:
+    - cron: '0 14 * * *'
+  workflow_dispatch:
 
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      - name: Install Tools
+        run: pip install anthropic requests
+      - name: Run
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python update_projections.py
+      - name: Save
+        run: |
+          git config --global user.name 'MLB Bot'
+          git config --global user.email 'bot@github.com'
+          git add data.json
+          git commit -m "Updated daily projections" || echo "No changes to commit"
+          git push
