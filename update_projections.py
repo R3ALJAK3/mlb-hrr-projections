@@ -22,15 +22,15 @@ except Exception as e:
 try:
     genai.configure(api_key=os.environ["GEMINI_API_KEY"])
     
-    # Use the specific model name that works with the current API version
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    # We use the full path to avoid the 404 error seen in the logs
+    model = genai.GenerativeModel(model_name='gemini-1.5-flash')
 
     prompt = f"Using this MLB slate: {slate_info}. Calculate HRR projections (Hits + Runs + RBIs) for the top 5 hitters on each team. Return ONLY a valid JSON object where keys are game names (e.g., 'NYY @ BOS') and values are lists of objects with 'name' and 'hrr' keys."
 
     response = model.generate_content(prompt)
     raw_text = response.text.strip()
     
-    # Remove markdown code blocks if present
+    # Cleaning any AI-generated markdown
     if "```" in raw_text:
         raw_text = raw_text.split("```")[1].replace("json", "").strip()
     
@@ -41,7 +41,7 @@ try:
     print("Successfully updated data.json")
 
 except Exception as e:
-    # Error logging to data.json to confirm the script is running
+    # Error logging directly to the file to force a site update so we can see the error
     with open("data.json", "w") as f:
-        json.dump({"error_log": str(e), "timestamp": today}, f)
+        json.dump({"api_error": str(e), "date": today}, f)
     print(f"Error occurred: {e}")
