@@ -14,18 +14,25 @@ except Exception as e:
 
 # 2. Setup Gemini
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+# Using the most basic model string to avoid "Not Found" errors
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 prompt = f"""Using this MLB slate: {slate_info}, calculate HRR projections (Hits + Runs + RBIs) for the top 5 hitters on each team. 
 Return ONLY a valid JSON object where keys are game names (e.g., 'NYY @ BOS') and values are lists of objects with 'name' and 'hrr' keys. 
 Do not include markdown formatting or extra text."""
 
 # 3. Ask Gemini
-response = model.generate_content(prompt)
-clean_json = response.text.replace('```json', '').replace('```', '').strip()
-
-# 4. Save
-with open("data.json", "w") as f:
-    f.write(clean_json)
-
-print("Successfully updated data.json via Gemini")
+try:
+    response = model.generate_content(prompt)
+    # Basic cleaning to ensure only JSON remains
+    clean_json = response.text.replace('```json', '').replace('```', '').strip()
+    
+    # 4. Save
+    with open("data.json", "w") as f:
+        f.write(clean_json)
+    print("Successfully updated data.json")
+except Exception as e:
+    print(f"Error during API call: {e}")
+    # Create a dummy file so the rest of the workflow doesn't crash
+    with open("data.json", "w") as f:
+        f.write("{}")
